@@ -1,9 +1,15 @@
 from .bc import ButtonCommand
-from . import CreateSpurGear
+from . import CreateSpurGear, InsertSpurGear
+import itertools
 
-commands: list[ButtonCommand] = [
-    CreateSpurGear.INSTANCE,
+PART_COMMANDS: list[ButtonCommand] = [
+    CreateSpurGear.INSTANCE
 ]
+
+ASSEMBLY_COMMANDS: list[ButtonCommand] = [
+    InsertSpurGear.INSTANCE
+]
+commands = itertools.chain(PART_COMMANDS, ASSEMBLY_COMMANDS)
 
 def start():
     for command in commands:

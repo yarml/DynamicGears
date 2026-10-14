@@ -2,10 +2,11 @@ from .. import Fusion
 from .. import utils
 
 class ButtonCommand:
-    def __init__(self, id: str, name: str, description: str):
+    def __init__(self, id: str, name: str, description: str, resid: str | None = None):
         self._local_handlers = []
         self._lifecycle_handlers = []
         self.id = id
+        self.resid = id if resid is None else resid
         self.name = name
         self.description = description
         self.cmd_def = None
@@ -29,11 +30,10 @@ class ButtonCommand:
         self._local_handlers.clear()
     
     def start(self):
-        self.cmd_def = utils.UI.commandDefinitions.addButtonDefinition(self.id, self.name, self.description, utils.icon_folder(self.id))
+        self.cmd_def = utils.UI.commandDefinitions.addButtonDefinition(self.id, self.name, self.description, utils.resdir(self.resid))
         utils.add_handler(self.cmd_def.commandCreated, self.created, local_handlers=self._lifecycle_handlers)
 
     def stop(self):
-        cmd_def = utils.UI.commandDefinitions.itemById(self.id)
-        if cmd_def:
-            cmd_def.deleteMe()
+        if self.cmd_def:
+            self.cmd_def.deleteMe()
         self._lifecycle_handlers.clear()

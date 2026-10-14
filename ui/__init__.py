@@ -1,35 +1,49 @@
 from .. import Fusion
 from .. import utils
-from ..commands import CreateSpurGear
+from ..commands import PART_COMMANDS, ASSEMBLY_COMMANDS
 
 WORKSPACE_DESIGN_ID = 'FusionSolidEnvironment'
 
 PANEL_CREATE_SOLID_ID = 'SolidCreatePanel'
 PANEL_ASSEMBLE_ID = 'AssemblePanel'
-PANEL_INSERT_ASSEMBLY_ID = 'InsertAssemblyPanel'
+PANEL_INSERT_ASSEMBLE_ID = 'InsertAssemblePanel'
 
-DROPDOWN_CREATE_GEAR_ID = utils.dropdownid('CreateGear')
+DROPDOWN_CREATE_GEAR_ID = utils.id_ui_dropdown('CreateGear')
+DROPDOWN_INSERT_GEAR_ID = utils.id_ui_dropdown('InsertGear')
+DROPDOWN_ASSEMBLE_GEAR_ID = utils.id_ui_dropdown('AssembleGear')
 
 UI = utils.UI
 
+_dropdowns: list[Fusion.DropDownControl] = []
+
 def start():
+    resdir = utils.resdir('GearDropdown')
+
     workspace = UI.workspaces.itemById(WORKSPACE_DESIGN_ID)
+
     panel_create_solid = workspace.toolbarPanels.itemById(PANEL_CREATE_SOLID_ID)
-    #PANEL_ASSEMBLE = WORKSPACE_DESIGN.toolbarPanels.itemById(PANEL_ASSEMBLE_ID)
-    #PANEL_INSERT_ASSEMBLY = WORKSPACE_DESIGN.toolbarPanels.itemById(PANEL_INSERT_ASSEMBLY_ID)
+    panel_assemble = workspace.toolbarPanels.itemById(PANEL_ASSEMBLE_ID)
+    panel_insert_assemble = workspace.toolbarPanels.itemById(PANEL_INSERT_ASSEMBLE_ID)
 
-    dropdown_create_gear = panel_create_solid.controls.addDropDown('Gear', utils.icon_folder(DROPDOWN_CREATE_GEAR_ID), DROPDOWN_CREATE_GEAR_ID, 'PrimitivePipe', False)
+    dropdown_create_gear = panel_create_solid.controls.addDropDown('Gear', resdir, DROPDOWN_CREATE_GEAR_ID, 'SeparatorAfter_PrimitivePipe')
+    dropdown_assemble_gear = panel_assemble.controls.addDropDown('Gear', resdir, DROPDOWN_ASSEMBLE_GEAR_ID, 'SeparatorAfter_FusionDuplicateWithJointsCommand')
+    dropdown_insert_gear = panel_insert_assemble.controls.addDropDown('Gear', resdir, DROPDOWN_INSERT_GEAR_ID, 'SeparatorAfter_FusionAddCanvasCommand')
 
-    dropdown_create_gear.controls.addCommand(UI.commandDefinitions.itemById(CreateSpurGear.ID))
+    for cmd in PART_COMMANDS:
+        if cmd.cmd_def:
+            dropdown_create_gear.controls.addCommand(cmd.cmd_def)
+    for cmd in ASSEMBLY_COMMANDS:
+        if cmd.cmd_def:
+            dropdown_assemble_gear.controls.addCommand(cmd.cmd_def)
+            dropdown_insert_gear.controls.addCommand(cmd.cmd_def)
+
+    global _dropdowns
+    _dropdowns = [dropdown_create_gear, dropdown_assemble_gear, dropdown_insert_gear]
     
 
 
 def stop():
-    workspace = UI.workspaces.itemById(WORKSPACE_DESIGN_ID)
-    panel_create_solid = workspace.toolbarPanels.itemById(PANEL_CREATE_SOLID_ID)
-    dropdown_create_gear = panel_create_solid.controls.itemById(DROPDOWN_CREATE_GEAR_ID)
-
-    if dropdown_create_gear:
-        for ctl in dropdown_create_gear.controls:
-            ctl.deleteMe()
-        dropdown_create_gear.deleteMe()
+    for dropdown in _dropdowns:
+        for control in dropdown.controls:
+            control.deleteMe()
+        dropdown.deleteMe()
