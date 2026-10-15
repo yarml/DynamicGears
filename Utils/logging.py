@@ -1,7 +1,6 @@
-import os
 import traceback
 import adsk.core
-from .. import config
+from .. import Config
 
 app = adsk.core.Application.get()
 ui = app.userInterface
@@ -13,7 +12,7 @@ def log(message: str, level: adsk.core.LogLevels = adsk.core.LogLevels.InfoLogLe
         log_type = adsk.core.LogTypes.FileLogType
         app.log(message, level, log_type)
 
-    if config.DEBUG or force_console:
+    if Config.DEBUG or force_console:
         log_type = adsk.core.LogTypes.ConsoleLogType
         app.log(message, level, log_type)
 

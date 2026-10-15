@@ -1,18 +1,21 @@
-from . import ui
-from . import commands
-from . import utils
+from . import UI
+from . import Commands
+from . import Features
+from . import Utils
 
 def run(context):
     try:
-        commands.start()
-        ui.start()
+        Commands.start()
+        Features.start()
+        UI.start()
     except:
-        utils.handle_error('run')
+        Utils.handle_error('run')
 
 def stop(context):
     try:
-        ui.stop()
-        commands.stop()
-        utils.clear_handlers()
+        UI.stop()
+        Features.stop()
+        Commands.stop()
+        Utils.clear_handlers()
     except:
-        utils.handle_error('stop')
+        Utils.handle_error('stop')

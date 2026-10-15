@@ -1,7 +1,7 @@
-from ..bc import ButtonCommand
-from ... import utils
+from .ButtonCommand import ButtonCommand
+from .. import Utils
 
-ID = utils.id_cmd('InsertSpurGear')
+ID = Utils.id_cmd('InsertSpurGear')
 RESID = 'SpurGear'
 Name = 'Spur Gear'
 Description = 'Creates a solid spur gear.'
