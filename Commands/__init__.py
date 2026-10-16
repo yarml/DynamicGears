@@ -1,13 +1,13 @@
-from .ButtonCommand import ButtonCommand
+from .DesignCommand import DesignCommand
 from . import CreateSpurGear, InsertSpurGear
 import itertools
 
-PART_COMMANDS: list[ButtonCommand] = [
+PART_COMMANDS: list[DesignCommand] = [
     CreateSpurGear.INSTANCE
 ]
 
-ASSEMBLY_COMMANDS: list[ButtonCommand] = [
-    InsertSpurGear.INSTANCE
+ASSEMBLY_COMMANDS: list[DesignCommand] = [
+    # InsertSpurGear.INSTANCE
 ]
 commands = list(itertools.chain(PART_COMMANDS, ASSEMBLY_COMMANDS))
 

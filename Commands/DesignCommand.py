@@ -1,7 +1,9 @@
-from ..Fusion import FusionCore
+from abc import ABC, abstractmethod
+from .InputFlow import InputFlow
+from ..Fusion import FusionCore, Fusion
 from .. import Utils
 
-class ButtonCommand:
+class DesignCommand(ABC):
     def __init__(self, id: str, name: str, description: str, resid: str | None = None):
         self._local_handlers = []
         self._lifecycle_handlers = []
@@ -10,6 +12,15 @@ class ButtonCommand:
         self.name = name
         self.description = description
         self.cmd_def = None
+        self.flow = self.make_flow()
+
+    @abstractmethod
+    def make_flow(self) -> InputFlow:
+        pass
+
+    @abstractmethod
+    def make_ui(self, inputs: FusionCore.CommandInputs):
+        pass
 
     # Lifecycle    
     def start(self):
@@ -26,9 +37,9 @@ class ButtonCommand:
         pass
 
     def on_validate(self, args: FusionCore.ValidateInputsEventArgs):
-        pass
+        args.areInputsValid = self.flow.validate()
     def on_input_changed(self, args: FusionCore.InputChangedEventArgs):
-        pass
+        self.flow.process()
 
     # Selection events
     def on_pre_select(self, args: FusionCore.SelectionEventArgs):
@@ -44,7 +55,7 @@ class ButtonCommand:
     def on_unselect(self, args: FusionCore.SelectionEventArgs):
         pass
 
-    #Keyboard/Mouse Events
+    # Keyboard/Mouse Events
     def on_key_down(self, args: FusionCore.KeyboardEventArgs):
         pass
     def on_key_up(self, args: FusionCore.KeyboardEventArgs):
@@ -80,8 +91,15 @@ class ButtonCommand:
     def on_deactivate(self, args: FusionCore.CommandEventArgs):
         pass
     def on_destroy(self, args: FusionCore.CommandEventArgs):
-        self._lifecycle_handlers.clear()
+        self._local_handlers.clear()
+
     def on_create(self, args: FusionCore.CommandCreatedEventArgs):
+        design = Fusion.Design.cast(Utils.APP.activeProduct)
+        comp = design.activeComponent
+
+        self.design = design
+        self.comp = comp
+
         Utils.add_handler(args.command.activate, self.on_activate, local_handlers=self._local_handlers)
         Utils.add_handler(args.command.deactivate, self.on_deactivate, local_handlers=self._local_handlers)
         Utils.add_handler(args.command.destroy, self.on_destroy, local_handlers=self._local_handlers)
@@ -108,3 +126,11 @@ class ButtonCommand:
         Utils.add_handler(args.command.select, self.on_select, local_handlers=self._local_handlers)
         Utils.add_handler(args.command.unselect, self.on_unselect, local_handlers=self._local_handlers)
         Utils.add_handler(args.command.validateInputs, self.on_validate, local_handlers=self._local_handlers)
+
+        self.make_ui(args.command.commandInputs)
+
+        self.flow.process()
+
+
+
+    
