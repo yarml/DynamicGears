@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from abc import ABC, abstractmethod
 from .InputFlow import InputFlow
 from ..Fusion import FusionCore, Fusion
@@ -13,6 +14,12 @@ class DesignCommand(ABC):
         self.description = description
         self.cmd_def = None
         self.flow = self.make_flow()
+        self.preselect_handlers: dict[str, Callable[[FusionCore.Selection, FusionCore.ObjectCollection], bool]] = dict()
+
+    def preselect_set(self, input: FusionCore.SelectionCommandInput, handler: Callable[[FusionCore.ObjectCollection], bool]):
+        self.preselect_handlers[input.id] = handler
+    def preselect_unset(self, input: FusionCore.SelectionCommandInput):
+        self.preselect_handlers.pop(input.id)
 
     @abstractmethod
     def make_flow(self) -> InputFlow:
@@ -43,7 +50,10 @@ class DesignCommand(ABC):
 
     # Selection events
     def on_pre_select(self, args: FusionCore.SelectionEventArgs):
-        pass
+        handler = self.preselect_handlers.get(args.activeInput.id)
+        if handler is not None:
+            args.isSelectable = handler(args.selection,  args.additionalEntities)
+
     def on_pre_select_end(self, args: FusionCore.SelectionEventArgs):
         pass
     def on_pre_select_mouse_move(self, args: FusionCore.SelectionEventArgs):
